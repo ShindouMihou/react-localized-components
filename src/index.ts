@@ -1,3 +1,3 @@
-export { localize } from "./localize";
-export * from "./types/localizations";
-export * from "./types/options";
+export { localize } from "./localize.tsx";
+export type * from "./types/localizations.d.ts";
+export type * from "./types/options.d.ts";
