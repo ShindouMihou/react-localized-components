@@ -1,16 +1,16 @@
 {
-  "name": "react-localized",
+  "name": "react-localized-components",
   "version": "0.0.1",
   "description": "Tiny yet simple library for React and React Native applications.",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://github.com/author/library#readme",
+  "homepage": "https://github.com/ShindouMihou/react-localized-components#readme",
   "bugs": {
-    "url": "https://github.com/author/library/issues"
+    "url": "https://github.com/ShindouMihou/react-localized-components/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ShindouMihou/react-localized.git"
+    "url": "git+https://github.com/ShindouMihou/react-localized-components.git"
   },
   "author": "Shindou Mihou <hello@mihou.dev>",
   "files": [
