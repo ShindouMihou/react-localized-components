@@ -33,7 +33,7 @@ yarn add react-localized-components
 At the entry point of your application (e.g., `index.tsx` or `App.tsx`), you must provide your translation strings using `setLocalizations` and set an initial language for your app with `setLanguage`.
 
 `src/index.tsx` or `src/App.tsx`:
-```typescript
+```tsx
 import { setLocalizations, setLanguage } from 'react-localized-components';
 
 // Define all your translations
@@ -59,7 +59,7 @@ setLanguage('en');
 Use the `localize` HOC to wrap any component you want to provide translations for.
 
 `src/components/MyButton.tsx`:
-```typescriptreact
+```tsx
 import React from 'react';
 import { localize } from 'react-localized-components';
 
@@ -81,7 +81,7 @@ Now you can use your new localized component. Pass a string with the `i18n:` pre
 To change the language at runtime, call `setLanguage` with the new language code and then trigger a re-render of your application.
 
 `src/App.tsx`:
-```typescriptreact
+```tsx
 import React from 'react';
 import { LocalizedButton } from './components/MyButton';
 import { setLanguage } from 'react-localized-components';
