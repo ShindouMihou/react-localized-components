@@ -3,16 +3,17 @@
 [![npm version](https://badge.fury.io/js/react-localized-components.svg)](https://badge.fury.io/js/react-localized-components)
 [![Build Status](https://travis-ci.org/ShindouMihou/react-localized-components.svg?branch=master)](https://travis-ci.org/ShindouMihou/react-localized-components)
 
-**Note: This is an in-progress library. While it is intended for production use, the API may be subject to change.**
+**Note: This is an in-progress library. While this is designed to eventually be used in an actual mobile application, the API may be subject to change.**
 
-A lightweight, type-safe, and easy-to-use localization library for React and React Native applications. It uses a Higher-Order Component (HOC) to wrap your components and automatically translate specified props.
+A lightweight, type-safe, and easy-to-use localization library for React and React Native applications. 
+It uses a Higher-Order Component (HOC) to wrap your components and automatically translate specified props.
 
 ## Features
 
-*   **Type-Safe**: Leverages TypeScript for type safety on your localization keys.
-*   **Simple Higher-Order Components (HOC) API**: Easily wrap existing components to add localization capabilities, similar to `forwardRef`.
+*   **Type-Safe**: Leverages TypeScript to enforce that all defined languages have a complete set of translation keys.
+*   **Simple API**: Use a factory function to create a localization instance and a Higher-Order Component to wrap your components.
 *   **React & React Native**: Works seamlessly in both React and React Native projects.
-*   **Targeted Props**: Specify which props should be localized, defaulting to `children`.
+*   **Targeted Props**: Specify exactly which props should be localized.
 
 ## Installation
 
@@ -28,89 +29,82 @@ yarn add react-localized-components
 
 ## Usage
 
-### 1. Configure Localizations
+### 1. Create a Localization Instance
 
-At the entry point of your application (e.g., `index.tsx` or `App.tsx`), you must provide your translation strings using `setLocalizations` and set an initial language for your app with `setLanguage`.
+Create a file to define your localizations, for example `src/localizations.ts`. Use `createLocalization` to set up your translations. The first language and its key-value pairs will serve as the schema for all other languages.
 
-`src/index.tsx` or `src/App.tsx`:
-```tsx
-import { setLocalizations, setLanguage } from 'react-localized-components';
+`src/localizations.ts`:
+```typescript
+import { createLocalization } from 'react-localized-components';
 
-// Define all your translations
-setLocalizations({
-    en: {
-        welcome: "Welcome to our app!",
-        button_text: "Click Me",
-        placeholder_name: "Enter your name"
-    },
-    es: {
-        welcome: "¡Bienvenido a nuestra aplicación!",
-        button_text: "Haz Clic",
-        placeholder_name: "Ingresa tu nombre"
-    },
+// Create a localization instance
+export const localizations = createLocalization("en", {
+    title: "My App",
+    welcome_message: "Welcome to the application!",
+    button_text: "Click Me"
+})
+.add("es", {
+    title: "Mi Aplicación",
+    welcome_message: "¡Bienvenido a la aplicación!",
+    button_text: "Haz Clic"
+})
+.addIncomplete("fr", "en", { // Fallbacks to 'en' for missing keys
+    title: "Mon Application"
 });
 
-// Set the default language for the application
-setLanguage('en'); 
+// Export the localize HOC from your instance
+export const localize = localizations.localize;
 ```
 
 ### 2. Create a Localized Component
 
-Use the `localize` HOC to wrap any component you want to provide translations for.
+Use the exported `localize` HOC to wrap any component you want to provide translations for. Pass the component and the names of the props you want to make localizable as arguments.
 
-`src/components/MyButton.tsx`:
-```tsx
+`src/components/MyHeader.tsx`:
+```typescriptreact
 import React from 'react';
-import { localize } from 'react-localized-components';
+import { localize } from '../localizations';
 
 // A standard React component
-const Button = (props: { title: string; onPress: () => void }) => (
-  <button onClick={props.onPress}>
-    {props.title}
-  </button>
+const Header = (props: { text: string }) => (
+  <h1>{props.text}</h1>
 );
 
-// Wrap the component, specifying the 'title' prop should be localizable
-export const LocalizedButton = localize(Button, { targets: ['title'] });
+// Wrap the component, specifying the 'text' prop should be localizable
+export const LocalizedHeader = localize(Header, "text");
 ```
 
 ### 3. Use Your Localized Component
 
-Now you can use your new localized component. Pass a string with the `i18n:` prefix, followed by the key from your localizations object. The library will automatically replace it with the correct translation based on the currently set language.
+Now you can use your new localized component. For any localized prop, pass a string with the `i18n:` prefix, followed by a key from your localization schema. The library will automatically replace it with the correct translation based on the current language.
 
-To change the language at runtime, call `setLanguage` with the new language code and then trigger a re-render of your application.
+To change the language at runtime, call the `setLanguage` method on your localization instance.
 
 `src/App.tsx`:
-```tsx
+```typescriptreact
 import React from 'react';
-import { LocalizedButton } from './components/MyButton';
-import { setLanguage } from 'react-localized-components';
+import { LocalizedHeader } from './components/MyHeader';
+import { localizations } from './localizations';
 
 function App() {
-  const handlePress = () => {
-    alert('Button clicked!');
-  };
-
-  // You must trigger a re-render after changing the language.
   // A state management library or React Context is recommended for this.
   const forceUpdate = React.useReducer(() => ({}), {})[1];
 
-  const changeLanguage = (lang: 'en' | 'es') => {
-    setLanguage(lang);
+  const changeLanguage = (lang: 'en' | 'es' | 'fr') => {
+    localizations.setLanguage(lang);
     forceUpdate(); // Force re-render to apply new language
   };
 
   return (
     <div>
-      {/* The 'title' prop will be automatically translated */}
-      <LocalizedButton 
-        title="i18n:button_text"
-         onPress={handlePress} 
-      />
+      {/* The 'text' prop will be automatically translated */}
+      {/* In localized components, the value of the prop are properly type-safe and will suggest available keys */}
+      <LocalizedHeader text="i18n:welcome_message" />
 
       <hr />
       <button onClick={() => changeLanguage('en')}>English</button>
       <button onClick={() => changeLanguage('es')}>Español</button>
+      <button onClick={() => changeLanguage('fr')}>Français</button>
     </div>
   );
 }
@@ -120,44 +114,23 @@ export default App;
 
 ## API
 
-### `localize(component, options?)`
+### `createLocalization(initialLanguage, schema)`
 
-A Higher-Order Component that returns a new component with localization capabilities.
+Creates a new localization instance.
 
-*   **`component`**: `React.ComponentType<P> | React.ReactElement<P>`
-    *   The React component to wrap.
-*   **`options`** (optional): `LocalizeOptions<T>`
-    *   An object to configure the HOC.
-    *   **`targets`**: `readonly string[]`
-        *   An array of prop names that should be localized.
-        *   **Default**: `['children']`
+*   **`initialLanguage`**: `string`
+    *   The language code for the initial set of translations (e.g., 'en').
+*   **`schema`**: `Record<string, string>`
+    *   An object of key-value pairs for the initial language. This object defines the required keys for all other languages.
 
-### `setLocalizations(context)`
+Returns a localization instance with the following methods:
 
-Sets or overwrites the entire localization object for the application. This should be called once at the entry point of your app.
-
-*   **`context`**: `Localizations`
-    *   An object where keys are language codes (e.g., 'en', 'es') and values are objects of translation key-value pairs.
-
-### `addLocalization(lang, context)`
-
-Adds a new language and its translations to the existing set of localizations.
-
-*   **`lang`**: `string`
-    *   The language code to add (e.g., 'fr').
-*   **`context`**: `Record<string, string>`
-    *   An object of translation key-value pairs for the new language.
-
-### `setLanguage(lang)`
-
-Sets the active language for the application. Throws an error if the language has not been previously defined via `setLocalizations` or `addLocalization`.
-
-*   **`lang`**: `string`
-    *   The language code to set as active (e.g., 'en').
-
-### `language`:
-
-Gets the currently active language code, importable from the library.
+*   **`add(lang, values)`**: Adds a complete set of translations for a new language. Throws an error if the keys don't match the schema.
+*   **`addIncomplete(lang, fallbackLang, values)`**: Adds a partial set of translations. Missing keys will be filled in from the specified `fallbackLang`.
+*   **`setLanguage(lang)`**: Sets the active language for the application. Throws an error if the language has not been defined.
+*   **`localize(component, ...targets)`**: The HOC for making components localizable.
+    *   **`component`**: `React.ComponentType<P> | React.ReactElement<P>` - The React component or element to wrap.
+    *   **`...targets`**: `string[]` - A list of prop names that should be made localizable. This can be `children` or any other prop that contains a string to be translated.
 
 ### Contributing
 
