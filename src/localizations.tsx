@@ -62,6 +62,7 @@ export function createLocalization<T extends Record<string, string>>(initialLang
             language = lang;
             return instance;
         },
+        getLanguage: () => language,
         localize<
             P extends object,
             const TTargets extends readonly string[]

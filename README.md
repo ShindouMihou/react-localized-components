@@ -128,6 +128,7 @@ Returns a localization instance with the following methods:
 *   **`add(lang, values)`**: Adds a complete set of translations for a new language. Throws an error if the keys don't match the schema.
 *   **`addIncomplete(lang, fallbackLang, values)`**: Adds a partial set of translations. Missing keys will be filled in from the specified `fallbackLang`.
 *   **`setLanguage(lang)`**: Sets the active language for the application. Throws an error if the language has not been defined.
+*   **`getLanguage()`**: Returns the currently active language.
 *   **`localize(component, ...targets)`**: The HOC for making components localizable.
     *   **`component`**: `React.ComponentType<P> | React.ReactElement<P>` - The React component or element to wrap.
     *   **`...targets`**: `string[]` - A list of prop names that should be made localizable. This can be `children` or any other prop that contains a string to be translated.
