@@ -41,12 +41,16 @@ import { createLocalization } from 'react-localized-components';
 export const localizations = createLocalization("en", {
     title: "My App",
     welcome_message: "Welcome to the application!",
-    button_text: "Click Me"
+    button_text: "Click Me",
+    counter: "You have clicked {count} ($count)->time", // ($prop)->singular automatically pluralizes based on the value of 'count', you pass count as a prop.
+    footer: "$[count >= 10]->'Stop clicking too much!'|'Keep clicking!'" // $[prop condition]->'true case'|'false case' for conditional rendering
 })
 .add("es", {
     title: "Mi Aplicación",
     welcome_message: "¡Bienvenido a la aplicación!",
-    button_text: "Haz Clic"
+    button_text: "Haz Clic",
+    counter: "Has hecho clic {count} ($count)->veces",
+    footer: "$[count >= 10]->'¡Deja de hacer clic demasiado!'|'¡Sigue haciendo clic!'" // Conditional rendering in Spanish
 })
 .addIncomplete("fr", "en", { // Fallbacks to 'en' for missing keys
     title: "Mon Application"
@@ -132,6 +136,26 @@ Returns a localization instance with the following methods:
 *   **`localize(component, ...targets)`**: The HOC for making components localizable.
     *   **`component`**: `React.ComponentType<P> | React.ReactElement<P>` - The React component or element to wrap.
     *   **`...targets`**: `string[]` - A list of prop names that should be made localizable. This can be `children` or any other prop that contains a string to be translated.
+
+## Conditionals and Pluralization
+
+React-localized supports prop injection which injects the value of a prop into the string. In addition, it supports conditionals and pluralization with the 
+following syntax:
+- `{prop}`: Injects the value of the prop into the string. You are expected to have the prop on the component, we won't include it in the props of the component.
+- `($prop)->singular`: Automatically pluralizes based on the value of `prop`. If `prop` is 1, it will use the singular form; otherwise, it will use the plural form. 
+This is recommended to use over conditional as it handles pluralizations properly, such as "1 fly" vs "2 flies".
+- `$[prop condition]->'true case'|'false case'`: Conditional rendering based on the value of `prop`. 
+If the condition is true, it will render the first case; otherwise, it will render the second case. This is useful for simple conditions.
+
+Examples:
+```typescript
+{
+    // Injects count and pluralizes based on its value
+    counter: "You have clicked {count} ($count)->times", 
+    // Conditional rendering based on count
+    footer: "$[count >= 10]->'Stop clicking too much!'|'Keep clicking!'"
+}
+```
 
 ### Contributing
 

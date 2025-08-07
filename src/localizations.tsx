@@ -1,4 +1,5 @@
 import React from "react";
+import pluralize from "pluralize";
 
 export function createLocalization<T extends Record<string, string>>(initialLanguage: string, schema: T) {
     type ConstrainedLocalizations = {
@@ -76,6 +77,52 @@ export function createLocalization<T extends Record<string, string>>(initialLang
                 ? component.type as React.ComponentType<P>
                 : component;
 
+            const processString = (str: string, props: P): string => {
+                let processed = str;
+
+                // conditionals: $[prop operator value]->'true'|'false' or $[prop]->'true'|'false'
+                processed = processed.replace(/\$\[(\w+)(?:\s*([<>=!]+)\s*(\S+))?]->'([^']*)'\|'([^']*)'/g, (_, propName, operator, value, trueVal, falseVal) => {
+                    const propValue = (props as Record<string, any>)[propName];
+
+                    if (operator) {
+                        const valToCompare = parseFloat(value);
+                        let condition = false;
+                        switch (operator) {
+                            case '>':  condition = propValue > valToCompare; break;
+                            case '<':  condition = propValue < valToCompare; break;
+                            case '>=': condition = propValue >= valToCompare; break;
+                            case '<=': condition = propValue <= valToCompare; break;
+                            case '==': condition = propValue == value; break; // Use loose equality for flexibility
+                            case '===': condition = propValue === value; break; // Use strict equality
+                            case '!=': condition = propValue != value; break; // Use loose inequality
+                        }
+                        return condition ? trueVal : falseVal;
+                    } else {
+                        return propValue ? trueVal : falseVal;
+                    }
+                });
+
+                // auto pluralization: ($prop)->word
+                processed = processed.replace(/\(\$(\w+)\)->(\w+)/g, (_, propName, word) => {
+                    const count = (props as Record<string, unknown>)[propName];
+                    if (typeof count === 'number') {
+                        return pluralize(word, count)
+                    }
+                    if (typeof count === 'boolean') {
+                        return pluralize(word, count ? 2 : 1);
+                    }
+                    return word;
+                });
+
+                // prop injection: {prop}
+                processed = processed.replace(/\{(\w+)}/g, (_, propName) => {
+                    const propValue = (props as Record<string, unknown>)[propName];
+                    return propValue !== undefined ? String(propValue) : `{${propName}}`;
+                });
+
+                return processed;
+            };
+
             return (props: Omit<P, Targets> & {
                 /**
                  * An internalization key that starts with "i18n:" which will be used to look up the translation in the localizations object.
@@ -101,9 +148,12 @@ export function createLocalization<T extends Record<string, string>>(initialLang
                         throw new Error(`Localization key "${String(key)}" not found for language "${language}".`);
                     }
 
+                    const value = localizations[language][key];
+                    const processedValue = processString(value, props as P);
+
                     return {
                         ...acc,
-                        [v]: localizations[language][key]
+                        [v]: processedValue
                     }
                 }, {});
                 const translatedProps = {...props, ...translations} as P;

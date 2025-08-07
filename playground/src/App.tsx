@@ -18,6 +18,10 @@ export function App() {
         <LocalizedHeader
             text={"i18n:description"}
         />
+        <LocalizedHeader
+            text={"i18n:items"}
+            count={1}
+        />
     </>
   )
 }
