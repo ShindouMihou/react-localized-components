@@ -1,6 +1,6 @@
 {
   "name": "react-localized-components",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Tiny yet simple library for React and React Native applications.",
   "type": "module",
   "license": "MIT",
