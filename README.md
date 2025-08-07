@@ -65,7 +65,7 @@ export const localize = localizations.localize;
 Use the exported `localize` HOC to wrap any component you want to provide translations for. Pass the component and the names of the props you want to make localizable as arguments.
 
 `src/components/MyHeader.tsx`:
-```typescriptreact
+```tsx
 import React from 'react';
 import { localize } from '../localizations';
 
@@ -85,7 +85,7 @@ Now you can use your new localized component. For any localized prop, pass a str
 To change the language at runtime, call the `setLanguage` method on your localization instance.
 
 `src/App.tsx`:
-```typescriptreact
+```tsx
 import React from 'react';
 import { LocalizedHeader } from './components/MyHeader';
 import { localizations } from './localizations';
